@@ -1,11 +1,11 @@
-package com.example.quickMaths;
+package com.example.producerConsumer;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.locks.ReentrantLock;
 
-import static com.example.quickMaths.Main.EOF;
+import static com.example.producerConsumer.Main.EOF;
 
 public class Main {
     public static final String EOF = "EOF";
