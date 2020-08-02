@@ -43,8 +43,11 @@ class myProducer implements Runnable {
             try {
                 System.out.println(color + "Adding..." + s);
                 bufferLock.lock();
-                buffer.add(s);
-                bufferLock.unlock();
+                try {
+                    buffer.add(s);
+                } finally {
+                    bufferLock.unlock();
+                }
 
 
                 Thread.sleep(random.nextInt(1000));
@@ -55,9 +58,11 @@ class myProducer implements Runnable {
 
         System.out.println(color + "Adding EOF and exiting...");
         bufferLock.lock();
-        buffer.add("EOF");
-        bufferLock.unlock();
-
+        try {
+            buffer.add("EOF");
+        } finally {
+            bufferLock.unlock();
+        }
     }
 }
 
@@ -73,23 +78,30 @@ class myConsumer implements Runnable {
     }
 
     public void run() {
+
+        int counter = 0;
         while (true) {
-            bufferLock.lock();
-            if (buffer.isEmpty()) {
-                bufferLock.unlock();
-                continue;
-            }
-            if (buffer.get(0).equals(EOF)) {
-                System.out.println(color + "Exiting");
-                bufferLock.unlock();
-                break;
+            if (bufferLock.tryLock()) {
+                try {
+                    if (buffer.isEmpty()) {
+                        continue;
+                    }
+                    System.out.println(color + "The counter" + counter);
+                    counter = 0;
+                    if (buffer.get(0).equals(EOF)) {
+                        System.out.println(color + "Exiting");
+                        break;
+                    } else {
+                        System.out.println(color + "Removed " + buffer.remove(0));
+                    }
+                } finally {
+                    bufferLock.unlock();
+                }
             } else {
-                System.out.println(color + "Removed " + buffer.remove(0));
+                counter++;
             }
-            bufferLock.unlock();
+
         }
-
     }
-
 }
 
